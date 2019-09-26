@@ -1,0 +1,74 @@
+---
+title: "Betty Car Project"
+author: "Nicholas Paul Brazeau Sanchez"
+date: "7/23/2019"
+output: html_document
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#write the path to your working directory
+my_wd <- "C://users//event.IES-PF0TLL50//Desktop//R Code & Data//DataSets"
+
+#set the working directory as your directory above
+setwd(my_wd)
+
+#import the data
+survey <- read.csv("survcey_data_clean_mb.csv")
+
+#binarize yes and no variables
+survey$currently_have_intimate_relationship <- as.integer(survey$currently_have_intimate_relationship)
+
+survey$ever_married <- as.integer(survey$ever_married)
+
+survey$older_child_elsewhere <- as.integer(survey$older_child_elsewhere)
+
+survey$hypertension_ind <- as.integer(survey$hypertension_ind)
+
+survey$heart_attack_last_12_mos <- as.integer(survey$heart_attack_last_12_mos)
+
+survey$diabetes_ind <- as.integer(survey$diabetes_ind)
+
+survey$stroke_last_12_mos <- as.integer(survey$stroke_last_12_mos)
+
+survey$get_where_need_to_go <- as.integer(survey$get_where_need_to_go)
+
+survey$medicare_ind <- as.integer(survey$medicare_ind)
+
+survey$owns_car_ind <- as.integer(survey$owns_car_ind)
+
+survey$chronic_conditions_ind <- as.integer(survey$chronic_conditions_ind)
+
+#numericizing frequency of child contact
+# survey$visit_freq_numeric <- for(i in 1:dim.survey[2]){
+#   if(grep("more_once_weekly", survey$frequency_child_contact[i]) == TRUE){
+#       survey$frequency_child_contact[i] = 104
+#   } else if(grep("weekly", survey$frequency_child_contact[i]) == TRUE){
+#       survey$frequency_child_contact[i] = 52
+#   } else if(grep("2 or 3 times per month", survey$frequency_child_contact[i]) == TRUE){
+#       survey$frequency_child_contact[i] = 30
+#   } else if(grep("monthly", survey$frequency_child_contact[i]) == TRUE){
+#       survey$frequency_child_contact[i] = 12
+#   } else if(grep("less than once per month", survey$frequency_child_contact[i]) == TRUE){
+#       survey$frequency_child_contact[i] = 5
+#   } else if(grep("never", survey$frequency_child_contact[i]) == TRUE){
+#       survey$frequency_child_contact[i] = 0
+#   }
+# }
+
+#finding means of child contact and widowing
+library(DescTools)
+
+freq_wid_table <- table(survey$widow_ind, survey$frequency_child_contact)
+percent_wid_table <- round(prop.table(freq_wid_table), 3)
+G_result <- GTest(survey$widow_ind, survey$frequency_child_contact)
+#remarkably, it seems that there's a high correlation between //not// being widowed and having many children!
+
+
+
+  
+
+
+#finding corrleation between widows and frquency of child contact
+```

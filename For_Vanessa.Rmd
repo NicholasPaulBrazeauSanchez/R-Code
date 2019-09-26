@@ -1,0 +1,175 @@
+---
+title: "Betty Car Project"
+author: "Nicholas Paul Brazeau Sanchez"
+date: "7/23/2019"
+output: html_document
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#write the path to your working directory
+my_wd <- "C://users//event.IES-PF0TLL50//Desktop//R Code & Data//DataSets"
+
+#set the working directory as your directory above
+setwd(my_wd)
+
+#import the data
+survey <- read.csv("survey_data_clean_mb.csv")
+
+
+
+#numericizing frequency of child contact
+# survey$visit_freq_numeric <- for(i in 1:dim.survey[2]){
+#   if(grep("more_once_weekly", survey$frequency_child_contact[i]) == TRUE){
+#       survey$frequency_child_contact[i] = 104
+#   } else if(grep("weekly", survey$frequency_child_contact[i]) == TRUE){
+#       survey$frequency_child_contact[i] = 52
+#   } else if(grep("2 or 3 times per month", survey$frequency_child_contact[i]) == TRUE){
+#       survey$frequency_child_contact[i] = 30
+#   } else if(grep("monthly", survey$frequency_child_contact[i]) == TRUE){
+#       survey$frequency_child_contact[i] = 12
+#   } else if(grep("less than once per month", survey$frequency_child_contact[i]) == TRUE){
+#       survey$frequency_child_contact[i] = 5
+#   } else if(grep("never", survey$frequency_child_contact[i]) == TRUE){
+#       survey$frequency_child_contact[i] = 0
+#   }
+# }
+
+#finding correlation between frequency of child contact and widowing
+library(DescTools)
+
+freq_wid_table <- table(survey$widow_ind, survey$frequency_child_contact)
+percent_wid_table <- round(prop.table(freq_wid_table), 3)
+G_child_result <- GTest(survey$widow_ind, survey$frequency_child_contact)
+#remarkably, it seems that there's a high correlation between //not// being widowed and having many children!
+
+#finding correlation between older children elsewhere and widowed
+
+child_wid_table <- table(survey$widow_ind, survey$older_child_elsewhere)
+percent_child_wid_table <- round(prop.table(child_wid_table), 3)
+Chi_child_wid_result <- chisq.test(child_wid_table)
+#high correlation between having older children and being widowed
+
+#finding correlation between # of chronic conditions and medicare
+med_cond_table <- table(survey$medicare_ind, survey$chronic_conditions_ind)
+percent_med_cond_table <- round(prop.table(med_cond_table), 3)
+Chi_med_cond_result <- chisq.test(survey$medicare_ind, survey$chronic_conditions_ind)
+#reasonable correlation, shows that medicare reduces the frequency of chronic conditions. Further probing into specifically senior segments required
+
+#correlation between net worth and having children elsewhere
+older_worth_table <- table(survey$older_child_elsewhere, survey$total_worth_of_assets)
+percent_older_worth_table <- round(prop.table(older_worth_table), 3)
+G_worth_result <- GTest(survey$older_child_elsewhere, survey$total_worth_of_assets)
+#hard to discern due to variability of options, but there appears to be a correlation
+
+#finding correleation between income range and can get where needed
+income_transport_table <- table(survey$income_range_gt_500k, survey$get_where_need_to_go)
+percent_older_worth_table <- round(prop.table(income_transport_table), 3)
+G_income_transport_result <- GTest(survey$income_range_gt_500k, survey$get_where_need_to_go)
+#seem to be independent for 10_25, 50_100, 100_250, 250_500, & 500K+ not for 25_50. Overall independent.
+
+#finding correlation between net worth and can get where needed
+Netwt_transport_table <- table(survey$total_worth_of_assets, survey$get_where_need_to_go)
+percent_Netwt_transport_table <- round(prop.table(income_transport_table), 3)
+G_Netwt_transport_result <- GTest(survey$total_worth_of_assets, survey$get_where_need_to_go)
+#no correlation for the two. Seems to be Consistent with the above finding that wealth has little bearing on where you need to go. 
+
+#luck would have it that the financial data is fairly incomplete, and thus bad to use..
+
+#reapplying tests with the old filter
+library(dplyr)
+
+survey_old <- survey %>% filter(young_mid_old_ind == "old")
+
+#testing this on old variables
+
+freq_wid_table_old <- table(survey_old$widow_ind, survey_old$frequency_child_contact)
+percent_wid_table_old <- round(prop.table(freq_wid_table), 3)
+G_child_result_old <- GTest(survey_old$widow_ind, survey_old$frequency_child_contact)
+#still a high correlation between being a widow and infrequent child visits
+
+#can get where needed vs # of chronic conditions for general pop
+needed_conditions_table<- table(survey$get_where_need_to_go, survey$num_chronic_conditions)
+percent_needed_conditions_table <- round(prop.table(needed_conditions_table), 3)
+G_needed_conditions_result <- GTest(needed_conditions_table)
+
+#can get where needed vs # of chronic conditions for the elderly
+needed_conditions_table_old <- table(survey_old$get_where_need_to_go, survey_old$num_chronic_conditions)
+percent_needed_conditions_table_old <- round(prop.table(needed_conditions_table_old), 3)
+G_needed_conditions_result <- GTest(needed_conditions_table_old)
+#the p value is shown to be very low; there's definitely a relationship. As chronic conditions increase, number of people who can travel rapidly decreases
+
+#let's look at specific chronic conditions which are the most strongly correlated with being unable to get where needed
+
+#diabetes
+needed_diabetes_table_old <- table(survey_old$get_where_need_to_go, survey_old$diabetes_ind)
+percent_needed_diabetes_table_old <- round(prop.table(needed_diabetes_table_old), 3)
+G_needed_diabetes_result <- GTest(needed_diabetes_table_old)
+#p-val = 5.93 e-5. Good correlation
+
+#recent heart attack
+needed_heart_table_old <- table(survey_old$get_where_need_to_go, survey_old$heart_attack_last_12_mos)
+percent_needed_heart_table_old <- round(prop.table(needed_heart_table_old), 3)
+G_needed_heart_result <- GTest(needed_heart_table_old)
+#p-val = 0.0004608. Reasonable correlation.
+
+#hypertension
+needed_hyper_table_old <- table(survey_old$get_where_need_to_go, survey_old$hypertension_ind)
+percent_needed_conditions_table_old <- round(prop.table(needed_hyper_table_old), 3)
+G_needed_hyper_result <- GTest(needed_hyper_table_old)
+#p-val =  0.01249. higher than expected
+
+#stroke
+needed_stroke_table_old <- table(survey_old$get_where_need_to_go, survey_old$stroke_last_12_mos)
+percent_needed_stroke_table_old <- round(prop.table(needed_stroke_table_old), 3)
+G_needed_stroke_result <- GTest(needed_stroke_table_old)
+#p-val = 0.006975. Reasonably high, but unexpectedly, the least correlative. Lack of data? Sample size of people with recent strokes is 31.
+
+#Let's try sampling how owning a car affects the can-get-where-needed factor of various subsegments of the population. 
+
+#general population
+needed_car_table <- table(survey$get_where_need_to_go, survey$owns_car_ind)
+percent_needed_car_table <- round(prop.table(needed_car_table), 3)
+Chi_needed_car_table <- chisq.test(needed_car_table)
+#P test is .015. Sufficient. Most people are capable of getting where needed with a car. It seems that there's only a tiny minority of people who are incapable of getting where they need to go, and the majority of people, in fact, can do so without owning a car. Lease? Rideshare? Use of public transit?
+
+#the youth
+survey_young <- survey %>% filter(young_mid_old_ind == "young")
+
+youth_needed_car_table <- table(survey_young$get_where_need_to_go, survey_young$owns_car_ind)
+youth_percent_needed_car_table <- round(prop.table(youth_needed_car_table), 3)
+Chi_youth_needed_car_table <- chisq.test(youth_needed_car_table)
+
+#for youth demographics, car ownership and being able to get where needed seems ot be heavily uncorrelated.
+
+#the elderly
+
+old_needed_car_table <- table(survey_old$get_where_need_to_go, survey_old$owns_car_ind)
+old_percent_needed_car_table <- round(prop.table(old_needed_car_table), 3)
+G_old_needed_car_table <- GTest(old_needed_car_table)
+#Old age also seems to be uncorrelated to getting where you need to go for car owners
+
+#the chronically ill elderly
+survey_chronic_old <- survey_old %>% filter(chronic_conditions_ind == 1)
+
+chronic_old_needed_car_table <- table(survey_chronic_old$get_where_need_to_go, survey_chronic_old$owns_car_ind)
+chronic_old_percent_needed_car_table <- round(prop.table(chronic_old_needed_car_table), 3)
+G_chronic_old_needed_car_table <- GTest(chronic_old_needed_car_table)
+#this statistic is remarkably uncorrelated. P= 0.98. Having a chronic condition. As the elderly increase in age, car ownership drastically decreases and becomes increasingly irrelevant to the ability to get where they need to go. Most of the elderly are chronically ill.
+
+#where is the correlation between having a car and being able to get where they need to go, then? It may be located in the middle age. Let's test.
+
+survey_mid <- survey %>% filter(young_mid_old_ind == "mid-age")
+
+mid_needed_car_table <- table(survey_mid$get_where_need_to_go, survey_mid$owns_car_ind)
+mid_percent_needed_car_table <- round(prop.table(mid_needed_car_table), 3)
+Chi_mid_needed_car_table <- chisq.test(mid_needed_car_table)
+#very very odd. Almost no correlation between car ownership and getting where need to go for this population segment.
+
+#perhaps it's a matter of age and being able to get where needed to go
+needed_age_table <- table(survey$young_mid_old_ind, survey$get_where_need_to_go)
+percent_needed_car_table <- round(prop.table(needed_age_table), 3)
+Chi_needed_age_table <- chisq.test(needed_age_table)
+#our P value is exceptionally low (1.454e -14)
+```
