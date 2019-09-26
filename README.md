@@ -1,3 +1,3 @@
 # R-Code
 Code that I developed for The SAP ERA Summer Apprenticeship. Developed in R.
-The best and most fruitful code is the Clean
+The best and most fruitful code is the Clean_Betty_Data.Rmd
